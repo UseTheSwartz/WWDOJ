@@ -9,28 +9,38 @@
             font-family: Arial, sans-serif;
             text-align: center;
             padding: 50px;
-            background-color: #f0f8ff;
+            background: linear-gradient(45deg, #f0f8ff, #ffecb3, #ffebee, #e8f5e9, #ede7f6);
+            background-size: 500% 500%;
+            animation: gradientBG 15s ease infinite;
             position: relative;
             overflow: hidden;
         }
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
         .banner {
-            font-size: 2.5em;
+            font-size: 3em;
             font-weight: bold;
             margin-bottom: 20px;
             color: #2c3e50;
+            text-shadow: 2px 2px #ffeb3b;
         }
         .date {
-            font-size: 1.8em;
+            font-size: 2em;
             margin-bottom: 10px;
             color: #e74c3c;
+            text-shadow: 1px 1px #ffffff;
         }
         .message {
-            font-size: 1.5em;
+            font-size: 1.8em;
             margin-bottom: 30px;
             color: #16a085;
+            text-shadow: 1px 1px #ffffff;
         }
         .footer {
-            font-size: 1em;
+            font-size: 1.2em;
             color: gray;
         }
         .confetti {
@@ -56,6 +66,8 @@
     <div class="message">Today is the day! Have fun and celebrate with a Josh you know!</div>
     <div class="footer">(c) Josh Voting Block, All Rights Reserved</div>
 
+    <audio id="celebrateAudio" src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" autoplay loop></audio>
+
     <script>
         // Function to format the date as Month Day, Year
         function formatDate(date) {
@@ -74,20 +86,45 @@
 
         // Function to create confetti
         function createConfetti() {
-            const confettiColors = ['#e74c3c', '#3498db', '#f1c40f', '#2ecc71', '#9b59b6'];
-            for (let i = 0; i < 100; i++) {
+            const confettiColors = ['#e74c3c', '#3498db', '#f1c40f', '#2ecc71', '#9b59b6', '#ffeb3b', '#e91e63'];
+            for (let i = 0; i < 150; i++) {
                 const confetti = document.createElement('div');
                 confetti.className = 'confetti';
                 confetti.style.left = `${Math.random() * 100}%`;
                 confetti.style.backgroundColor = confettiColors[Math.floor(Math.random() * confettiColors.length)];
                 confetti.style.animationDelay = `${Math.random() * 5}s`;
+                confetti.style.width = `${Math.random() * 10 + 5}px`;
+                confetti.style.height = `${Math.random() * 10 + 5}px`;
                 document.body.appendChild(confetti);
             }
         }
 
         // Create confetti on page load
         createConfetti();
+
+        // Auto play audio on page load
+        window.addEventListener('load', () => {
+            const audio = document.getElementById('celebrateAudio');
+            audio.play().catch(() => {
+                // Handle autoplay policy restrictions
+                const playButton = document.createElement('button');
+                playButton.textContent = 'Play Music';
+                playButton.style.position = 'fixed';
+                playButton.style.top = '10px';
+                playButton.style.right = '10px';
+                playButton.style.padding = '10px';
+                playButton.style.backgroundColor = '#16a085';
+                playButton.style.color = '#ffffff';
+                playButton.style.border = 'none';
+                playButton.style.borderRadius = '5px';
+                playButton.style.cursor = 'pointer';
+                playButton.addEventListener('click', () => {
+                    audio.play();
+                    playButton.style.display = 'none';
+                });
+                document.body.appendChild(playButton);
+            });
+        });
     </script>
 </body>
 </html>
-
