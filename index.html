@@ -9,23 +9,44 @@
             font-family: Arial, sans-serif;
             text-align: center;
             padding: 50px;
+            background-color: #f0f8ff;
+            position: relative;
+            overflow: hidden;
         }
         .banner {
-            font-size: 2em;
+            font-size: 2.5em;
             font-weight: bold;
             margin-bottom: 20px;
+            color: #2c3e50;
         }
         .date {
-            font-size: 1.5em;
+            font-size: 1.8em;
             margin-bottom: 10px;
+            color: #e74c3c;
         }
         .message {
-            font-size: 1.2em;
+            font-size: 1.5em;
             margin-bottom: 30px;
+            color: #16a085;
         }
         .footer {
-            font-size: 0.9em;
+            font-size: 1em;
             color: gray;
+        }
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: red;
+            opacity: 0.8;
+            top: -10px;
+            animation: fall 5s infinite;
+        }
+        @keyframes fall {
+            to {
+                transform: translateY(100vh);
+                opacity: 0;
+            }
         }
     </style>
 </head>
@@ -50,6 +71,23 @@
 
         // Insert the formatted date into the HTML
         document.getElementById('date').textContent = `${formattedDate} is the Worldwide Day of Josh!`;
+
+        // Function to create confetti
+        function createConfetti() {
+            const confettiColors = ['#e74c3c', '#3498db', '#f1c40f', '#2ecc71', '#9b59b6'];
+            for (let i = 0; i < 100; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = `${Math.random() * 100}%`;
+                confetti.style.backgroundColor = confettiColors[Math.floor(Math.random() * confettiColors.length)];
+                confetti.style.animationDelay = `${Math.random() * 5}s`;
+                document.body.appendChild(confetti);
+            }
+        }
+
+        // Create confetti on page load
+        createConfetti();
     </script>
 </body>
 </html>
+
