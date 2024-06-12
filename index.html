@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Worldwide Day of Josh</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 50px;
+        }
+        .banner {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+        .date {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+        }
+        .message {
+            font-size: 1.2em;
+            margin-bottom: 30px;
+        }
+        .footer {
+            font-size: 0.9em;
+            color: gray;
+        }
+    </style>
+</head>
+<body>
+    <div class="banner">Worldwide Day of Josh</div>
+    <div class="date" id="date"></div>
+    <div class="message">Today is the day! Have fun and celebrate with a Josh you know!</div>
+    <div class="footer">(c) Josh Voting Block, All Rights Reserved</div>
+
+    <script>
+        // Function to format the date as Month Day, Year
+        function formatDate(date) {
+            const options = { year: 'numeric', month: 'long', day: 'numeric' };
+            return date.toLocaleDateString(undefined, options);
+        }
+
+        // Get today's date
+        const today = new Date();
+
+        // Format today's date
+        const formattedDate = formatDate(today);
+
+        // Insert the formatted date into the HTML
+        document.getElementById('date').textContent = `${formattedDate} is the Worldwide Day of Josh!`;
+    </script>
+</body>
+</html>
