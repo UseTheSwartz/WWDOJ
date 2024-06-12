@@ -58,6 +58,9 @@
                 opacity: 0;
             }
         }
+        .video-background {
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -66,7 +69,9 @@
     <div class="message">Today is the day! Have fun and celebrate with a Josh you know!</div>
     <div class="footer">(c) Josh Voting Block, All Rights Reserved</div>
 
-    <audio id="celebrateAudio" src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" autoplay loop></audio>
+    <div class="video-background">
+        <iframe id="celebrateVideo" width="0" height="0" src="https://www.youtube.com/embed/3GwjfUFyY6M?autoplay=1&loop=1&playlist=3GwjfUFyY6M" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+    </div>
 
     <script>
         // Function to format the date as Month Day, Year
@@ -102,28 +107,17 @@
         // Create confetti on page load
         createConfetti();
 
-        // Auto play audio on page load
+        // Set volume to 25% after the video loads
         window.addEventListener('load', () => {
-            const audio = document.getElementById('celebrateAudio');
-            audio.play().catch(() => {
-                // Handle autoplay policy restrictions
-                const playButton = document.createElement('button');
-                playButton.textContent = 'Play Music';
-                playButton.style.position = 'fixed';
-                playButton.style.top = '10px';
-                playButton.style.right = '10px';
-                playButton.style.padding = '10px';
-                playButton.style.backgroundColor = '#16a085';
-                playButton.style.color = '#ffffff';
-                playButton.style.border = 'none';
-                playButton.style.borderRadius = '5px';
-                playButton.style.cursor = 'pointer';
-                playButton.addEventListener('click', () => {
-                    audio.play();
-                    playButton.style.display = 'none';
-                });
-                document.body.appendChild(playButton);
-            });
+            const videoIframe = document.getElementById('celebrateVideo');
+            videoIframe.onload = function() {
+                const videoContentWindow = videoIframe.contentWindow;
+                const videoDocument = videoContentWindow.document;
+                const videoElement = videoDocument.querySelector('video');
+                if (videoElement) {
+                    videoElement.volume = 0.25;
+                }
+            };
         });
     </script>
 </body>
