@@ -1,0 +1,290 @@
+
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+.scene {
+  position: relative;
+  width: 100%;
+  min-height: 560px;
+  overflow: hidden;
+  border-radius: var(--border-radius-lg);
+  background: #0a0a1a;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1.5rem;
+  text-align: center;
+  cursor: pointer;
+}
+canvas.fx { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
+.content { position: relative; z-index: 10; pointer-events: none; }
+.title {
+  font-size: clamp(32px, 7vw, 60px);
+  font-weight: 500;
+  color: #fff;
+  line-height: 1.1;
+  margin-bottom: 0.5rem;
+  text-shadow: 0 0 40px rgba(200,160,255,0.6);
+}
+.subtitle {
+  font-size: clamp(14px, 3vw, 20px);
+  color: rgba(255,255,255,0.65);
+  margin-bottom: 0.5rem;
+}
+.dateline {
+  font-size: 13px;
+  color: rgba(255,255,255,0.35);
+  margin-top: 1.5rem;
+}
+.hint {
+  font-size: 12px;
+  color: rgba(255,255,255,0.25);
+  margin-top: 0.75rem;
+  letter-spacing: 0.05em;
+}
+.footer-line {
+  font-size: 11px;
+  color: rgba(255,255,255,0.18);
+  margin-top: 1.5rem;
+}
+</style>
+
+<div class="scene" id="scene">
+  <canvas class="fx" id="c"></canvas>
+
+  <div class="content">
+    <div class="title">Worldwide Day<br>of Josh</div>
+    <div class="subtitle" id="dateline"></div>
+    <div class="subtitle">Have fun and celebrate with a Josh you know!</div>
+    <div class="hint">tap anywhere for more fireworks</div>
+    <div class="footer-line">&copy; Josh Voting Block &mdash; All Rights Reserved</div>
+  </div>
+</div>
+
+<script>
+const scene = document.getElementById('scene');
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+
+const d = new Date();
+document.getElementById('dateline').textContent =
+  d.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' }) + ' is the Worldwide Day of Josh!';
+
+function resize() {
+  canvas.width = scene.offsetWidth;
+  canvas.height = scene.offsetHeight;
+}
+resize();
+window.addEventListener('resize', resize);
+
+const COLORS = [
+  '#ff6b9d','#c084fc','#60a5fa','#34d399','#fbbf24',
+  '#f97316','#e879f9','#a78bfa','#38bdf8','#4ade80',
+  '#facc15','#fb7185'
+];
+
+const particles = [];
+const balloons = [];
+const stars = [];
+
+function rnd(a, b) { return a + Math.random() * (b - a); }
+function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+function spawnBurst(x, y, count = 60) {
+  for (let i = 0; i < count; i++) {
+    const angle = (Math.PI * 2 * i) / count + rnd(-0.3, 0.3);
+    const speed = rnd(2, 9);
+    const color = pick(COLORS);
+    const type = Math.random() < 0.5 ? 'rect' : 'circle';
+    particles.push({
+      x, y,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed - rnd(0, 3),
+      color,
+      type,
+      w: rnd(4, 10),
+      h: rnd(4, 7),
+      rot: rnd(0, Math.PI * 2),
+      rotV: rnd(-0.2, 0.2),
+      life: 1,
+      decay: rnd(0.012, 0.022),
+      gravity: 0.18
+    });
+  }
+}
+
+function spawnTrail(x, y) {
+  const targetX = rnd(canvas.width * 0.2, canvas.width * 0.8);
+  const targetY = rnd(60, canvas.height * 0.45);
+  const color = pick(COLORS);
+  const trail = [];
+  const steps = 18;
+  for (let i = 0; i <= steps; i++) {
+    trail.push({ x: x + (targetX - x) * (i / steps), y: y + (targetY - y) * (i / steps) });
+  }
+  return { trail, pos: 0, color, targetX, targetY, done: false };
+}
+
+const rockets = [];
+
+function launchRocket() {
+  const x = rnd(canvas.width * 0.15, canvas.width * 0.85);
+  const startY = canvas.height + 10;
+  rockets.push(spawnTrail(x, startY));
+}
+
+function spawnBalloon() {
+  const color = pick(COLORS);
+  balloons.push({
+    x: rnd(30, canvas.width - 30),
+    y: canvas.height + rnd(40, 120),
+    vy: rnd(0.6, 1.4),
+    vx: rnd(-0.4, 0.4),
+    wobble: rnd(0, Math.PI * 2),
+    wobbleSpeed: rnd(0.02, 0.05),
+    r: rnd(18, 30),
+    color,
+    life: 1,
+    string: rnd(20, 45)
+  });
+}
+
+function spawnStar() {
+  stars.push({
+    x: rnd(0, canvas.width),
+    y: rnd(0, canvas.height * 0.6),
+    r: rnd(1, 2.5),
+    alpha: rnd(0.2, 0.8),
+    twinkleSpeed: rnd(0.01, 0.04),
+    t: rnd(0, Math.PI * 2)
+  });
+}
+
+for (let i = 0; i < 60; i++) spawnStar();
+for (let i = 0; i < 5; i++) spawnBalloon();
+
+let lastRocket = 0;
+let lastBalloon = 0;
+
+scene.addEventListener('click', (e) => {
+  const rect = scene.getBoundingClientRect();
+  const x = (e.clientX - rect.left) * (canvas.width / rect.width);
+  const y = (e.clientY - rect.top) * (canvas.height / rect.height);
+  spawnBurst(x, y, 80);
+});
+
+function drawBalloon(b) {
+  ctx.save();
+  ctx.globalAlpha = b.life;
+  const wobX = Math.sin(b.wobble) * 4;
+
+  ctx.beginPath();
+  ctx.ellipse(b.x + wobX, b.y, b.r, b.r * 1.25, 0, 0, Math.PI * 2);
+  ctx.fillStyle = b.color;
+  ctx.fill();
+
+  ctx.beginPath();
+  ctx.fillStyle = 'rgba(255,255,255,0.25)';
+  ctx.ellipse(b.x + wobX - b.r * 0.28, b.y - b.r * 0.3, b.r * 0.22, b.r * 0.32, -0.5, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.beginPath();
+  ctx.moveTo(b.x + wobX, b.y + b.r * 1.25);
+  const cp1x = b.x + wobX + rnd(-8, 8);
+  const cp1y = b.y + b.r * 1.25 + b.string * 0.5;
+  ctx.quadraticCurveTo(cp1x, cp1y, b.x + wobX + rnd(-6, 6), b.y + b.r * 1.25 + b.string);
+  ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+  ctx.lineWidth = 1;
+  ctx.stroke();
+
+  ctx.restore();
+}
+
+function loop(ts) {
+  requestAnimationFrame(loop);
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  for (const s of stars) {
+    s.t += s.twinkleSpeed;
+    const a = s.alpha * (0.5 + 0.5 * Math.sin(s.t));
+    ctx.beginPath();
+    ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(255,255,255,${a})`;
+    ctx.fill();
+  }
+
+  if (ts - lastRocket > 900) {
+    launchRocket();
+    lastRocket = ts;
+  }
+
+  for (let i = rockets.length - 1; i >= 0; i--) {
+    const r = rockets[i];
+    if (r.done) { rockets.splice(i, 1); continue; }
+    const speed = 3;
+    r.pos = Math.min(r.pos + speed, r.trail.length - 1);
+    const pt = r.trail[Math.floor(r.pos)];
+    ctx.beginPath();
+    ctx.arc(pt.x, pt.y, 2.5, 0, Math.PI * 2);
+    ctx.fillStyle = r.color;
+    ctx.fill();
+    for (let t = Math.max(0, Math.floor(r.pos) - 8); t < Math.floor(r.pos); t++) {
+      const tp = r.trail[t];
+      ctx.beginPath();
+      ctx.arc(tp.x, tp.y, 1, 0, Math.PI * 2);
+      ctx.fillStyle = r.color + '55';
+      ctx.fill();
+    }
+    if (r.pos >= r.trail.length - 1) {
+      spawnBurst(r.targetX, r.targetY, 70);
+      r.done = true;
+    }
+  }
+
+  for (let i = particles.length - 1; i >= 0; i--) {
+    const p = particles[i];
+    p.x += p.vx;
+    p.y += p.vy;
+    p.vy += p.gravity;
+    p.vx *= 0.98;
+    p.rot += p.rotV;
+    p.life -= p.decay;
+    if (p.life <= 0) { particles.splice(i, 1); continue; }
+    ctx.save();
+    ctx.globalAlpha = p.life;
+    ctx.translate(p.x, p.y);
+    ctx.rotate(p.rot);
+    ctx.fillStyle = p.color;
+    if (p.type === 'rect') {
+      ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+    } else {
+      ctx.beginPath();
+      ctx.arc(0, 0, p.w / 2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  if (ts - lastBalloon > 1800) {
+    spawnBalloon();
+    lastBalloon = ts;
+  }
+
+  for (let i = balloons.length - 1; i >= 0; i--) {
+    const b = balloons[i];
+    b.y -= b.vy;
+    b.x += b.vx;
+    b.wobble += b.wobbleSpeed;
+    if (b.y < -100) { balloons.splice(i, 1); continue; }
+    drawBalloon(b);
+  }
+}
+
+requestAnimationFrame(loop);
+
+setTimeout(() => {
+  for (let i = 0; i < 3; i++) {
+    setTimeout(() => launchRocket(), i * 400);
+  }
+}, 300);
+</script>
